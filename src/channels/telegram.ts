@@ -127,7 +127,9 @@ export class TelegramChannel implements Channel {
       this.groq = new Groq({ apiKey: groqApiKey });
       logger.info('Groq STT (voice transcription) enabled');
     } else {
-      logger.warn('GROQ_API_KEY not set — voice messages will not be transcribed');
+      logger.warn(
+        'GROQ_API_KEY not set — voice messages will not be transcribed',
+      );
     }
 
     const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -264,22 +266,30 @@ export class TelegramChannel implements Channel {
 
       const modeLabels: Record<VoiceMode, string> = {
         auto: 'auto — голос в ответ на голос, текст в ответ на текст',
-        on:   'on — всегда отвечать голосом',
-        off:  'off — никогда не отвечать голосом',
+        on: 'on — всегда отвечать голосом',
+        off: 'off — никогда не отвечать голосом',
       };
 
       if (!arg) {
         const current = this.getVoiceMode(chatJid);
-        ctx.reply(`🔊 Текущий режим: *${current}*\n_${modeLabels[current]}_\n\nИзменить: /voice on | /voice off | /voice auto`, { parse_mode: 'Markdown' });
+        ctx.reply(
+          `🔊 Текущий режим: *${current}*\n_${modeLabels[current]}_\n\nИзменить: /voice on | /voice off | /voice auto`,
+          { parse_mode: 'Markdown' },
+        );
         return;
       }
 
       if (arg === 'on' || arg === 'off' || arg === 'auto') {
         this.setVoiceMode(chatJid, arg);
-        ctx.reply(`✅ Режим голосовых ответов: *${arg}*\n_${modeLabels[arg]}_`, { parse_mode: 'Markdown' });
+        ctx.reply(
+          `✅ Режим голосовых ответов: *${arg}*\n_${modeLabels[arg]}_`,
+          { parse_mode: 'Markdown' },
+        );
         logger.info({ chatJid, mode: arg }, 'Voice mode changed');
       } else {
-        ctx.reply('Неизвестный режим. Используй: /voice on | /voice off | /voice auto');
+        ctx.reply(
+          'Неизвестный режим. Используй: /voice on | /voice off | /voice auto',
+        );
       }
     });
 
@@ -328,7 +338,13 @@ export class TelegramChannel implements Channel {
 
       const isGroup =
         ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
-      this.opts.onChatMetadata(chatJid, timestamp, chatName, 'telegram', isGroup);
+      this.opts.onChatMetadata(
+        chatJid,
+        timestamp,
+        chatName,
+        'telegram',
+        isGroup,
+      );
 
       let group = this.opts.registeredGroups()[chatJid];
       if (!group && threadId) {
@@ -343,7 +359,10 @@ export class TelegramChannel implements Channel {
         }
       }
       if (!group) {
-        logger.debug({ chatJid, chatName }, 'Message from unregistered Telegram chat');
+        logger.debug(
+          { chatJid, chatName },
+          'Message from unregistered Telegram chat',
+        );
         return;
       }
 
@@ -357,7 +376,10 @@ export class TelegramChannel implements Channel {
         is_from_me: false,
       });
 
-      logger.info({ chatJid, chatName, sender: senderName }, 'Telegram message stored');
+      logger.info(
+        { chatJid, chatName, sender: senderName },
+        'Telegram message stored',
+      );
     });
 
     // Handle non-text messages with placeholders
@@ -378,7 +400,13 @@ export class TelegramChannel implements Channel {
 
       const isGroup =
         ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
-      this.opts.onChatMetadata(chatJid, timestamp, undefined, 'telegram', isGroup);
+      this.opts.onChatMetadata(
+        chatJid,
+        timestamp,
+        undefined,
+        'telegram',
+        isGroup,
+      );
       this.opts.onMessage(chatJid, {
         id: ctx.message.message_id.toString(),
         chat_jid: chatJid,
@@ -408,17 +436,28 @@ export class TelegramChannel implements Channel {
       const isGroup =
         ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
 
-      this.opts.onChatMetadata(chatJid, timestamp, undefined, 'telegram', isGroup);
+      this.opts.onChatMetadata(
+        chatJid,
+        timestamp,
+        undefined,
+        'telegram',
+        isGroup,
+      );
 
-      const transcription = await this.transcribeVoice(ctx.message.voice.file_id);
+      const transcription = await this.transcribeVoice(
+        ctx.message.voice.file_id,
+      );
       const content = transcription
-        ? `[Voice: ${transcription}]${caption}`
-        : `[Voice message — transcription unavailable]${caption}`;
+        ? `@${ASSISTANT_NAME} [Voice: ${transcription}]${caption}`
+        : `@${ASSISTANT_NAME} [Voice message — transcription unavailable]${caption}`;
 
       if (transcription) {
         // Mark for auto-mode: next response should be voice too
         this.voiceJids.add(chatJid);
-        logger.info({ chatJid, chars: transcription.length }, 'Voice transcribed');
+        logger.info(
+          { chatJid, chars: transcription.length },
+          'Voice transcribed',
+        );
       }
 
       this.opts.onMessage(chatJid, {
