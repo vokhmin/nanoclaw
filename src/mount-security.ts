@@ -179,12 +179,8 @@ function findAllowedRoot(
 ): AllowedRoot | null {
   for (const root of allowedRoots) {
     const expandedRoot = expandPath(root.path);
-    const realRoot = getRealPath(expandedRoot);
-
-    if (realRoot === null) {
-      // Allowed root doesn't exist, skip it
-      continue;
-    }
+    // Use real path if available, fall back to expanded (Docker-out-of-Docker)
+    const realRoot = getRealPath(expandedRoot) || expandedRoot;
 
     // Check if realPath is under realRoot
     const relative = path.relative(realRoot, realPath);
@@ -255,16 +251,10 @@ export function validateMount(
     };
   }
 
-  // Expand and resolve the host path
+  // Expand the host path (but don't check existence — in Docker-out-of-Docker
+  // mode, host paths are not visible inside this container)
   const expandedPath = expandPath(mount.hostPath);
-  const realPath = getRealPath(expandedPath);
-
-  if (realPath === null) {
-    return {
-      allowed: false,
-      reason: `Host path does not exist: "${mount.hostPath}" (expanded: "${expandedPath}")`,
-    };
-  }
+  const realPath = getRealPath(expandedPath) || expandedPath;
 
   // Check against blocked patterns
   const blockedMatch = matchesBlockedPattern(

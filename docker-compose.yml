@@ -1,0 +1,30 @@
+services:
+  nanoclaw:
+    build: .
+    container_name: nanoclaw
+    restart: unless-stopped
+    working_dir: /home/av/projects/nanoclaw
+    volumes:
+      # Mount project at the same path as host — keeps process.cwd() in sync
+      # so sibling agent containers get correct host paths for their mounts.
+      - /home/av/projects/nanoclaw:/home/av/projects/nanoclaw
+      # Docker socket — needed to spin up agent containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mount credentials for OAuth
+      - /home/av/.claude/.credentials.json:/home/av/.claude/.credentials.json
+    environment:
+      - HOME=/home/av
+    env_file: .env
+    networks:
+      - nanoclaw-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  nanoclaw-net:
+    driver: bridge
+    # No 'internal: true' — NanoClaw needs internet for Telegram API.
+    # Agent containers are not on this network (created by Docker daemon separately).

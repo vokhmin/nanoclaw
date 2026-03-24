@@ -1,0 +1,11 @@
+{
+  "allowedRoots": [
+    {
+      "path": "/home/av/projects/vox-infra",
+      "allowReadWrite": true,
+      "description": "vox-infra repo"
+    }
+  ],
+  "blockedPatterns": [".ssh", ".gnupg", ".credentials.json", ".env"],
+  "nonMainReadOnly": false
+}
