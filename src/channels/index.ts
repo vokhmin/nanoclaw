@@ -7,6 +7,9 @@
 
 // slack
 
+// http
+import './http.js';
+
 // telegram
 import './telegram.js';
 
