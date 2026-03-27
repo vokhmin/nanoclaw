@@ -369,8 +369,9 @@ export function startCredentialProxy(
             const authHeaders = await getAuthHeaders();
             const model = input.model || 'claude-haiku-4-5-20251001';
             const maxTokens = input.max_tokens || 4096;
-            const messages =
-              input.messages || [{ role: 'user', content: message }];
+            const messages = input.messages || [
+              { role: 'user', content: message },
+            ];
 
             const apiBody = JSON.stringify({
               model,
@@ -393,6 +394,7 @@ export function startCredentialProxy(
                   host: upstreamUrl.host,
                   'anthropic-version': '2023-06-01',
                   'anthropic-beta': 'oauth-2025-04-20',
+                  'x-app': 'cli',
                 },
               } as RequestOptions,
               apiBody,
@@ -405,13 +407,22 @@ export function startCredentialProxy(
               .join('');
 
             if (resp.status !== 200) {
-              logger.warn({ status: resp.status, body: resp.body.substring(0, 300) }, '/api/chat upstream error');
+              logger.warn(
+                { status: resp.status, body: resp.body.substring(0, 300) },
+                '/api/chat upstream error',
+              );
             }
 
             res.writeHead(resp.status, {
               'Content-Type': 'application/json',
             });
-            res.end(JSON.stringify({ text: text || '', model: data.model, usage: data.usage }));
+            res.end(
+              JSON.stringify({
+                text: text || '',
+                model: data.model,
+                usage: data.usage,
+              }),
+            );
           } catch (err) {
             logger.error({ err }, '/api/chat error');
             if (!res.headersSent) {
