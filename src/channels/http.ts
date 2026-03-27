@@ -67,7 +67,9 @@ export class HttpChannel implements Channel {
           { port: this.port, host: this.host },
           'HTTP channel listening',
         );
-        console.log(`\n  HTTP channel: http://${this.host}:${this.port}/api/chat\n`);
+        console.log(
+          `\n  HTTP channel: http://${this.host}:${this.port}/api/chat\n`,
+        );
         resolve();
       });
     });
@@ -76,7 +78,10 @@ export class HttpChannel implements Channel {
   async sendMessage(jid: string, text: string): Promise<void> {
     const pending = this.pending.get(jid);
     if (!pending) {
-      logger.debug({ jid }, 'HTTP sendMessage: no pending request (already resolved)');
+      logger.debug(
+        { jid },
+        'HTTP sendMessage: no pending request (already resolved)',
+      );
       return;
     }
 
